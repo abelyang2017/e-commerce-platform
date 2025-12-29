@@ -20,13 +20,11 @@ const router = createRouter({
     },
     {
       path: '/category/:category?',
-      name: 'Category',
-      component: () => import('@/views/CategoryView.vue'),
+      redirect: { name: 'Home' },
     },
     {
       path: '/product/:id',
-      name: 'Product',
-      component: () => import('@/views/ProductDetail.vue'),
+      redirect: { name: 'Home' },
     },
     {
       path: '/store/:id',
@@ -39,24 +37,14 @@ const router = createRouter({
       component: () => import('@/views/CodeCupon.vue'),
     },
     {
-      path: '/e-ticket/:storeId/:ticketId',
-      name: 'ETicket',
-      component: () => import('@/views/E-Ticket.vue'),
+      path: '/score-system/:storeId/:ticketId',
+      name: 'ScoreSystem',
+      component: () => import('@/views/ScoreSystem.vue'),
     },
     {
-      path: '/cupon-ticket/:id',
-      name: 'CuponTicket',
-      component: () => import('@/views/ScoreCupon.vue'),
-    },
-    {
-      path: '/cart',
-      name: 'Cart',
-      component: () => import('@/views/ShopCart.vue'),
-    },
-    {
-      path: '/search',
-      name: 'Search',
-      component: () => import('@/views/SearchView.vue'),
+      path: '/home-ticket-cupon/:id',
+      name: 'HomeTicketCupon',
+      component: () => import('@/views/HomeTicketCupon.vue'),
     },
     {
       path: '/store-search',

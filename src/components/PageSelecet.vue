@@ -2,14 +2,14 @@
   <!-- 分頁（依照截圖版型） -->
   <div
     v-if="totalPagesSafe > 1"
-    class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 pt-4 md:pt-6 border-t border-[#e0e0e0]"
+    class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 pt-4 md:pt-6 border-[#e0e0e0]"
   >
     <div class="flex items-center gap-3 md:gap-6">
       <!-- Prev -->
       <button
         type="button"
         :disabled="isFirst"
-        class="flex items-center justify-center text-[#4f4f4f] md:hover:text-[#FF8A00] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        class="group flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         @click="goPrev"
         aria-label="Prev"
       >
@@ -23,7 +23,7 @@
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="w-4 h-4 md:w-5 md:h-5"
+          class="w-4 h-4 md:w-5 md:h-5 stroke-[#4f4f4f] group-hover:stroke-[#FF8A00] transition-colors"
           aria-hidden="true"
         >
           <path d="m15 18-6-6 6-6"></path>
@@ -51,7 +51,7 @@
       <button
         type="button"
         :disabled="isLast"
-        class="flex items-center justify-center text-[#4f4f4f] md:hover:text-[#FF8A00] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        class="group flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         @click="goNext"
         aria-label="Next"
       >
@@ -65,7 +65,7 @@
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="w-4 h-4 md:w-5 md:h-5"
+          class="w-4 h-4 md:w-5 md:h-5 stroke-[#4f4f4f] group-hover:stroke-[#FF8A00] transition-colors"
           aria-hidden="true"
         >
           <path d="m9 18 6-6-6-6"></path>

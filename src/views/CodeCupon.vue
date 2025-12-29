@@ -6,7 +6,8 @@
         <img :src="heroImage" :alt="coupon.name" class="w-full h-full object-cover" />
       </div>
 
-      <div class="px-4 py-6">
+      <!-- 手機底部有固定操作列：內容區需要預留底部空間避免被蓋住 -->
+      <div class="px-4 py-6 pb-24">
         <div class="mb-6">
           <h1 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[22px] text-[#191919] mb-2">
             {{ coupon.name }}
@@ -46,10 +47,15 @@
           />
           <p class="font-['Noto_Sans_TC:Regular',sans-serif] text-[13px] text-[#999999]">請向店家服務人員索取核銷碼</p>
         </div>
+      </div>
 
+      <!-- 手機版：固定在底部的操作列（不隨內容滾動消失） -->
+      <div
+        class="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e0e0e0] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0px_-2px_8px_rgba(0,0,0,0.08)] z-40"
+      >
         <button
           type="button"
-          class="w-full bg-[#FF8A00] active:bg-[#e66a00] text-white font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] py-4 rounded-[12px] transition-colors shadow-md"
+          class="w-full bg-[#FF8A00] active:bg-[#e66a00] !text-white font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] py-4 rounded-[12px] transition-colors shadow-md"
           @click="handleUse"
         >
           使用

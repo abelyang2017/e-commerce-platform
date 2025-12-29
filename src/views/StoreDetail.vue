@@ -92,16 +92,19 @@
 
         <!-- Coupons carousel -->
         <div v-if="store.coupons && store.coupons.length" class="mb-6">
-          <div class="-mx-4">
-            <Swiper
-              class="ep-swiper ep-swiper--mobile px-4"
-              :modules="swiperModules"
-              :slides-per-view="'auto'"
-              :space-between="12"
-              :pagination="{ clickable: true }"
+          <div>
+            <!-- 不依賴 Swiper：用 scroll-snap 做手機手指左右滑動（連續卡片列） -->
+            <div
+              ref="couponMobileScrollerEl"
+              class="overflow-x-auto -mx-4 px-4 snap-x snap-mandatory scrollbar-hide scroll-smooth scroll-px-4"
+              @scroll.passive="onCouponMobileScroll"
             >
-              <SwiperSlide v-for="c in store.coupons" :key="`c-${c.id}`" style="width: 320px;">
-                <div class="bg-white rounded-[12px] border border-[#e0e0e0] p-3 flex gap-3">
+              <div class="flex gap-2 w-max">
+                <div
+                  v-for="c in coupons"
+                  :key="`c-${c.id}`"
+                  class="w-[320px] max-w-full flex-shrink-0 snap-start bg-white rounded-[12px] border border-[#e0e0e0] p-3 flex gap-3"
+                >
                   <div class="flex-shrink-0">
                     <img :src="c.image" :alt="c.name" class="w-24 h-24 rounded-[8px] object-cover" />
                   </div>
@@ -124,8 +127,20 @@
                     </button>
                   </div>
                 </div>
-              </SwiperSlide>
-            </Swiper>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-center gap-1.5 mt-3" v-if="coupons.length > 1">
+            <button
+              v-for="(_, idx) in coupons"
+              :key="`coupon-m-dot-${idx}`"
+              type="button"
+              class="h-1.5 rounded-full transition-all"
+              :class="idx === couponMobilePageIndex ? 'w-6 bg-[#FF8A00]' : 'w-1.5 bg-[#e0e0e0]'"
+              @click="scrollToCouponMobilePage(idx)"
+              aria-label="切換優惠券分頁"
+            ></button>
           </div>
         </div>
 
@@ -158,15 +173,23 @@
           </div>
 
           <div class="-mx-4">
-            <Swiper
-              class="ep-swiper ep-swiper--mobile px-4"
-              :modules="swiperModules"
-              :slides-per-view="'auto'"
-              :space-between="12"
-              :pagination="{ clickable: true }"
+            <!-- 不依賴 Swiper：用 scroll-snap 做手機手指左右滑動（每頁 2 張） -->
+            <div
+              ref="eTicketMobileScrollerEl"
+              class="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide mx-5 scroll-smooth"
+              @scroll.passive="onETicketMobileScroll"
             >
-              <SwiperSlide v-for="t in store.eTickets" :key="`t-${t.id}`" style="width: 160px;">
-                <div class="cursor-pointer group" @click="goToETicket(t)">
+              <div
+                v-for="(page, pageIdx) in eTicketMobilePages"
+                :key="`eticket-m-page-${pageIdx}`"
+                class="min-w-full flex gap-3 snap-start"
+              >
+                <div
+                  v-for="t in page"
+                  :key="`t-${t.id}`"
+                  class="flex-[0_0_calc(50%-6px)] min-w-0 cursor-pointer group"
+                  @click="goToETicket(t)"
+                >
                   <div
                     class="bg-white rounded-[12px] overflow-hidden shadow-[0px_1px_3px_rgba(0,0,0,0.06)] transition-shadow border border-[#e0e0e0]"
                   >
@@ -194,8 +217,27 @@
                     </div>
                   </div>
                 </div>
-              </SwiperSlide>
-            </Swiper>
+
+                <!-- 最後一頁如果只有 1 張，補一個透明佔位讓間距/對齊一致 -->
+                <div
+                  v-if="page.length === 1"
+                  class="flex-[0_0_calc(50%-6px)] min-w-0 opacity-0 pointer-events-none"
+                  aria-hidden="true"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-center gap-2 mt-4" v-if="eTicketMobilePages.length > 1">
+            <button
+              v-for="(_, idx) in eTicketMobilePages"
+              :key="`eticket-m-dot-${idx}`"
+              type="button"
+              class="h-2 rounded-full transition-all"
+              :class="idx === eTicketMobilePageIndex ? 'w-8 bg-[#f27400]' : 'w-2 bg-[#e0e0e0]'"
+              @click="scrollToETicketMobilePage(idx)"
+              aria-label="切換電子票券分頁"
+            ></button>
           </div>
         </div>
       </div>
@@ -291,16 +333,21 @@
           </div>
 
           <div v-if="store.coupons && store.coupons.length" class="mb-8">
-            <Swiper
-              class="ep-swiper ep-swiper--desktop"
-              :modules="swiperModules"
-              :slides-per-view="'auto'"
-              :space-between="16"
-              :pagination="{ clickable: true }"
+            <!-- 不依賴 Swiper：桌機用 scroll-snap（每頁 2 張） -->
+            <div
+              ref="couponDesktopScrollerEl"
+              class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth"
+              @scroll.passive="onCouponDesktopScroll"
             >
-              <SwiperSlide v-for="c in store.coupons" :key="`dc-${c.id}`" style="width: 380px;">
+              <div
+                v-for="(page, pageIdx) in couponDesktopPages"
+                :key="`coupon-d-page-${pageIdx}`"
+                class="min-w-full snap-start flex gap-4"
+              >
                 <div
-                  class="bg-white rounded-[16px] border border-[#e0e0e0] p-4 md:hover:border-[#FF8A00] transition-colors flex gap-4"
+                  v-for="c in page"
+                  :key="`dc-${c.id}`"
+                  class="w-[380px] shrink-0 bg-white rounded-[16px] border border-[#e0e0e0] p-4 md:hover:border-[#FF8A00] transition-colors flex gap-4"
                 >
                   <div class="flex-shrink-0">
                     <img :src="c.image" :alt="c.name" class="w-28 h-28 rounded-[12px] object-cover" />
@@ -324,8 +371,20 @@
                     </button>
                   </div>
                 </div>
-              </SwiperSlide>
-            </Swiper>
+              </div>
+            </div>
+
+            <div class="flex justify-center gap-2 mt-4" v-if="couponDesktopPages.length > 1">
+              <button
+                v-for="(_, idx) in couponDesktopPages"
+                :key="`coupon-d-dot-${idx}`"
+                type="button"
+                class="h-2 rounded-full transition-all"
+                :class="idx === couponDesktopPageIndex ? 'w-8 bg-[#f27400]' : 'w-2 bg-[#e0e0e0]'"
+                @click="scrollToCouponDesktopPage(idx)"
+                aria-label="切換優惠券分頁"
+              ></button>
+            </div>
           </div>
 
           <div v-if="store.description" class="mb-8">
@@ -352,15 +411,23 @@
               <h2 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[20px] text-[#191919]">電子票券</h2>
             </div>
 
-            <Swiper
-              class="ep-swiper ep-swiper--desktop"
-              :modules="swiperModules"
-              :slides-per-view="'auto'"
-              :space-between="16"
-              :pagination="{ clickable: true }"
+            <!-- 不依賴 Swiper：桌機用 scroll-snap（每頁 4 張） -->
+            <div
+              ref="eTicketDesktopScrollerEl"
+              class="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth"
+              @scroll.passive="onETicketDesktopScroll"
             >
-              <SwiperSlide v-for="t in store.eTickets" :key="`dt-${t.id}`" style="width: 200px;">
-                <div class="cursor-pointer group" @click="goToETicket(t)">
+              <div
+                v-for="(page, pageIdx) in eTicketDesktopPages"
+                :key="`eticket-d-page-${pageIdx}`"
+                class="min-w-full snap-start flex gap-4"
+              >
+                <div
+                  v-for="t in page"
+                  :key="`dt-${t.id}`"
+                  class="w-[200px] shrink-0 cursor-pointer group"
+                  @click="goToETicket(t)"
+                >
                   <div
                     class="bg-white rounded-[16px] overflow-hidden shadow-[0px_1px_3px_rgba(0,0,0,0.06)] md:group-hover:shadow-[0px_2px_8px_rgba(0,0,0,0.08)] transition-shadow border border-[#e0e0e0]"
                   >
@@ -388,8 +455,28 @@
                     </div>
                   </div>
                 </div>
-              </SwiperSlide>
-            </Swiper>
+
+                <!-- 最後一頁不足 4 張時，補透明佔位讓間距/對齊一致 -->
+                <div
+                  v-for="n in Math.max(0, 4 - page.length)"
+                  :key="`eticket-d-placeholder-${pageIdx}-${n}`"
+                  class="w-[200px] shrink-0 opacity-0 pointer-events-none"
+                  aria-hidden="true"
+                ></div>
+              </div>
+            </div>
+
+            <div class="flex justify-center gap-2 mt-4" v-if="eTicketDesktopPages.length > 1">
+              <button
+                v-for="(_, idx) in eTicketDesktopPages"
+                :key="`eticket-d-dot-${idx}`"
+                type="button"
+                class="h-2 rounded-full transition-all"
+                :class="idx === eTicketDesktopPageIndex ? 'w-8 bg-[#f27400]' : 'w-2 bg-[#e0e0e0]'"
+                @click="scrollToETicketDesktopPage(idx)"
+                aria-label="切換電子票券分頁"
+              ></button>
+            </div>
           </div>
         </div>
       </div>
@@ -407,14 +494,9 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStoresStore } from '@/stores/StoresStores'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Pagination } from 'swiper/modules'
-
-import 'swiper/css'
-import 'swiper/css/pagination'
 
 const route = useRoute()
 const router = useRouter()
@@ -430,7 +512,7 @@ const goHome = () => {
 
 const goToETicket = (ticket) => {
   router.push({
-    name: 'ETicket',
+    name: 'ScoreSystem',
     params: { storeId: route.params.id, ticketId: ticket?.id },
   })
 }
@@ -442,7 +524,184 @@ const goToCoupon = (coupon) => {
   })
 }
 
-const swiperModules = [Pagination]
+// 優惠券：不依賴 Swiper，用 scroll-snap 做「整頁」左右滑動
+function chunkList(list, perPage) {
+  const safeList = Array.isArray(list) ? list : []
+  const size = Math.max(1, Number(perPage) || 1)
+  const pages = []
+  for (let i = 0; i < safeList.length; i += size) pages.push(safeList.slice(i, i + size))
+  return pages
+}
+
+const coupons = computed(() => {
+  return Array.isArray(store.value?.coupons) ? store.value.coupons : []
+})
+
+const couponDesktopPages = computed(() => chunkList(coupons.value, 2))
+
+const eTickets = computed(() => {
+  return Array.isArray(store.value?.eTickets) ? store.value.eTickets : []
+})
+
+// 手機每頁 2 張，與 HomeTickets 體驗一致
+const eTicketMobilePages = computed(() => chunkList(eTickets.value, 2))
+// 桌機每頁 4 張（200px 卡片 + 16px 間距，1000px 容器可容納）
+const eTicketDesktopPages = computed(() => chunkList(eTickets.value, 4))
+
+function useSnapPager(pagesRef) {
+  const scrollerEl = ref(null)
+  const pageIndex = ref(0)
+  let rafId = 0
+
+  const onScroll = () => {
+    if (!scrollerEl.value) return
+    cancelAnimationFrame(rafId)
+    rafId = requestAnimationFrame(() => {
+      const el = scrollerEl.value
+      const pageWidth = el.clientWidth || 1
+      const idx = Math.round(el.scrollLeft / pageWidth)
+      const maxIdx = Math.max(0, pagesRef.value.length - 1)
+      pageIndex.value = Math.max(0, Math.min(idx, maxIdx))
+    })
+  }
+
+  const scrollToPage = async (idx) => {
+    await nextTick()
+    const el = scrollerEl.value
+    if (!el) return
+    const pageWidth = el.clientWidth || 0
+    const maxIdx = Math.max(0, pagesRef.value.length - 1)
+    const safeIdx = Math.max(0, Math.min(idx, maxIdx))
+    el.scrollTo({ left: safeIdx * pageWidth, behavior: 'smooth' })
+  }
+
+  const onResize = () => {
+    onScroll()
+  }
+
+  onMounted(() => {
+    onScroll()
+    window.addEventListener('resize', onResize, { passive: true })
+  })
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('resize', onResize)
+    cancelAnimationFrame(rafId)
+  })
+
+  watch(
+    () => pagesRef.value.length,
+    () => {
+      onScroll()
+    }
+  )
+
+  return { scrollerEl, pageIndex, onScroll, scrollToPage }
+}
+
+// 手機優惠券：連續卡片列（以卡片 offsetLeft 作為分頁基準）
+function useSnapItemsPager(itemsCountRef) {
+  const scrollerEl = ref(null)
+  const pageIndex = ref(0)
+  let rafId = 0
+
+  const getItems = () => {
+    const el = scrollerEl.value
+    if (!el) return []
+    const wrap = el.firstElementChild
+    if (!wrap) return []
+    return Array.from(wrap.children || [])
+  }
+
+  const onScroll = () => {
+    if (!scrollerEl.value) return
+    cancelAnimationFrame(rafId)
+    rafId = requestAnimationFrame(() => {
+      const el = scrollerEl.value
+      const items = getItems()
+      if (!items.length) {
+        pageIndex.value = 0
+        return
+      }
+      const x = el.scrollLeft
+      let bestIdx = 0
+      let bestDist = Number.POSITIVE_INFINITY
+      for (let i = 0; i < items.length; i++) {
+        const itemLeft = items[i]?.offsetLeft ?? 0
+        const dist = Math.abs(itemLeft - x)
+        if (dist < bestDist) {
+          bestDist = dist
+          bestIdx = i
+        }
+      }
+      const maxIdx = Math.max(0, (itemsCountRef.value || 0) - 1)
+      pageIndex.value = Math.max(0, Math.min(bestIdx, maxIdx))
+    })
+  }
+
+  const scrollToPage = async (idx) => {
+    await nextTick()
+    const el = scrollerEl.value
+    if (!el) return
+    const items = getItems()
+    if (!items.length) return
+    const maxIdx = Math.max(0, (itemsCountRef.value || 0) - 1)
+    const safeIdx = Math.max(0, Math.min(idx, maxIdx))
+    const left = items[safeIdx]?.offsetLeft ?? 0
+    el.scrollTo({ left, behavior: 'smooth' })
+  }
+
+  const onResize = () => {
+    onScroll()
+  }
+
+  onMounted(() => {
+    onScroll()
+    window.addEventListener('resize', onResize, { passive: true })
+  })
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('resize', onResize)
+    cancelAnimationFrame(rafId)
+  })
+
+  watch(
+    () => itemsCountRef.value,
+    () => {
+      onScroll()
+    }
+  )
+
+  return { scrollerEl, pageIndex, onScroll, scrollToPage }
+}
+
+const {
+  scrollerEl: couponMobileScrollerEl,
+  pageIndex: couponMobilePageIndex,
+  onScroll: onCouponMobileScroll,
+  scrollToPage: scrollToCouponMobilePage,
+} = useSnapItemsPager(computed(() => coupons.value.length))
+
+const {
+  scrollerEl: couponDesktopScrollerEl,
+  pageIndex: couponDesktopPageIndex,
+  onScroll: onCouponDesktopScroll,
+  scrollToPage: scrollToCouponDesktopPage,
+} = useSnapPager(couponDesktopPages)
+
+const {
+  scrollerEl: eTicketMobileScrollerEl,
+  pageIndex: eTicketMobilePageIndex,
+  onScroll: onETicketMobileScroll,
+  scrollToPage: scrollToETicketMobilePage,
+} = useSnapPager(eTicketMobilePages)
+
+const {
+  scrollerEl: eTicketDesktopScrollerEl,
+  pageIndex: eTicketDesktopPageIndex,
+  onScroll: onETicketDesktopScroll,
+  scrollToPage: scrollToETicketDesktopPage,
+} = useSnapPager(eTicketDesktopPages)
 
 onMounted(() => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -450,51 +709,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Swiper pagination：用 CSS 做出你原本的「灰色圓點 / 橘色長條 active」 */
-:deep(.ep-swiper .swiper-pagination) {
-  position: static;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100% !important;
-  gap: 6px;
-  margin-top: 12px;
+/* 隱藏橫向捲軸（等同常見的 scrollbar-hide 插件） */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
 }
-
-/* 避免 Swiper 內建樣式影響置中 */
-:deep(.ep-swiper .swiper-pagination-bullets) {
-  width: 100% !important;
-  left: 0 !important;
-}
-
-:deep(.ep-swiper .swiper-pagination-bullet) {
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
-  background: #e0e0e0;
-  opacity: 1;
-  transition: width 0.3s ease, background-color 0.3s ease;
-}
-
-:deep(.ep-swiper .swiper-pagination-bullet-active) {
-  width: 24px;
-  background: #ff8a00;
-}
-
-@media (min-width: 768px) {
-  :deep(.ep-swiper--desktop .swiper-pagination) {
-    gap: 8px;
-    margin-top: 16px;
-  }
-
-  :deep(.ep-swiper--desktop .swiper-pagination-bullet) {
-    width: 8px;
-    height: 8px;
-  }
-
-  :deep(.ep-swiper--desktop .swiper-pagination-bullet-active) {
-    width: 32px;
-  }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 </style>
 

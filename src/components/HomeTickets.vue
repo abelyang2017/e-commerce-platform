@@ -1,45 +1,151 @@
 <template>
-  <!-- 熱門票券 -->
-  <div class="w-10/12 mx-auto px-4 py-8">
-    <h2 class="mb-6 text-2xl font-bold text-gray-900">熱門票券</h2>
-    <div class="tickets-grid">
+  <!-- 熱門票券（依照設計稿：桌機雙欄 / 手機橫滑分頁） -->
+  <section class="max-w-[1400px] mx-auto px-4 md:px-6 py-4 md:py-8">
+    <h2
+      class="font-['Noto_Sans_TC:Bold',sans-serif] text-[20px] md:text-[28px] text-[#191919] mb-4 md:mb-6"
+    >
+      熱門票券
+    </h2>
+
+    <!-- 桌機：2 欄列表 -->
+    <div class="hidden md:grid md:grid-cols-2 gap-3 md:gap-4">
       <div
         v-for="ticket in tickets"
         :key="ticket.id"
-        class="ticket-card"
+        class="relative bg-white rounded-[16px] md:rounded-[20px] overflow-hidden shadow-[0px_1px_3px_rgba(0,0,0,0.06)] md:hover:shadow-[0px_2px_8px_rgba(0,0,0,0.08)] transition-shadow cursor-pointer group"
         role="button"
         tabindex="0"
         @click="goCuponTicket(ticket)"
+        @keydown.enter.prevent="goCuponTicket(ticket)"
+        @keydown.space.prevent="goCuponTicket(ticket)"
       >
-        <!-- 左側 Logo -->
-        <div class="ticket-logo">
-          <img :src="ticket.image" :alt="ticket.storeName" class="ticket-logo-img" />
-        </div>
+        <div class="flex items-stretch">
+          <div
+            class="flex-1 flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-gradient-to-r from-[#fffbf5] to-white border-r border-dashed border-[#d4a574]"
+          >
+            <div
+              class="w-16 h-16 md:w-20 md:h-20 rounded-[8px] md:rounded-[12px] overflow-hidden shrink-0 border border-[#e0e0e0]"
+            >
+              <img :src="ticket.image" :alt="ticket.storeName" class="w-full h-full object-cover" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3
+                class="font-['Noto_Sans_TC:Bold',sans-serif] text-[15px] md:text-[17px] text-[#191919] mb-1.5 md:mb-2 truncate"
+              >
+                {{ ticket.storeName }}
+              </h3>
+              <p class="font-['Noto_Sans_TC:Regular',sans-serif] text-[12px] md:text-[13px] text-[#4f4f4f] truncate">
+                {{ ticket.ticketName }}
+              </p>
+            </div>
+          </div>
 
-        <!-- 中間資訊區域 -->
-        <div class="ticket-info">
-          <div class="ticket-store">{{ ticket.storeName }}</div>
-          <div class="ticket-name">{{ ticket.ticketName }}</div>
-        </div>
-
-        <!-- 右側票券存根（黃色區域） -->
-        <div class="ticket-stub">
-          <!-- 左側虛線穿孔 -->
-          <div class="stub-perforation" aria-hidden="true"></div>
-          <!-- 中央圓形穿孔 -->
-          <div class="stub-notch" aria-hidden="true"></div>
-
-          <div class="stub-points">{{ ticket.points }}積分</div>
-          <button class="stub-btn" type="button" @click="goCuponTicket(ticket)">兌換</button>
+          <div
+            class="w-[100px] md:w-[120px] bg-[#FED330] flex flex-col items-center justify-center gap-2 md:gap-3 p-3 md:p-4 relative"
+          >
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-6 bg-white rounded-r-full -translate-x-1.5"></div>
+            <div class="text-center">
+              <div
+                class="font-['Noto_Sans_TC:Bold',sans-serif] text-[20px] md:text-[26px] text-[#191919] leading-none whitespace-nowrap"
+              >
+                {{ ticket.points }}積分
+              </div>
+            </div>
+            <button
+              class="px-3 md:px-4 py-1.5 md:py-2 bg-white md:hover:bg-[#f7f6f5] text-[#191919] rounded-full font-['Noto_Sans_TC:Bold',sans-serif] text-[11px] md:text-[12px] transition-colors shadow-md w-full"
+              type="button"
+              @click.stop="goCuponTicket(ticket)"
+            >
+              兌換
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- 手機：橫向滑動（每頁 2 張） -->
+    <div class="md:hidden">
+      <div
+        ref="mobileScrollerEl"
+        class="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+        @scroll.passive="onMobileScroll"
+      >
+        <div v-for="(page, pageIdx) in mobilePages" :key="`page-${pageIdx}`" class="min-w-full flex gap-3 snap-start">
+          <div
+            v-for="ticket in page"
+            :key="ticket.id"
+            class="flex-1 relative cursor-pointer"
+            role="button"
+            tabindex="0"
+            @click="goCuponTicket(ticket)"
+            @keydown.enter.prevent="goCuponTicket(ticket)"
+            @keydown.space.prevent="goCuponTicket(ticket)"
+          >
+            <div class="flex flex-col gap-2">
+              <div class="relative aspect-[4/3] bg-white rounded-[16px] overflow-hidden shadow-[0px_1px_3px_rgba(0,0,0,0.06)]">
+                <img :src="ticket.image" :alt="ticket.storeName" class="w-full h-full object-cover" />
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-3"
+                >
+                  <div class="w-full">
+                    <h3 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[15px] text-white mb-1 truncate">
+                      {{ ticket.storeName }}
+                    </h3>
+                    <p class="font-['Noto_Sans_TC:Regular',sans-serif] text-[12px] text-white/90 truncate">
+                      {{ ticket.ticketName }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="relative bg-[#FED330] rounded-[16px] overflow-hidden shadow-[0px_1px_3px_rgba(0,0,0,0.06)]">
+                <div class="flex items-center justify-between px-4 py-3 relative">
+                  <div
+                    class="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-6 bg-white rounded-r-full -translate-x-1.5"
+                  ></div>
+                  <div
+                    class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-6 bg-white rounded-l-full translate-x-1.5"
+                  ></div>
+                  <div class="flex items-center justify-between w-full gap-3">
+                    <div
+                      class="font-['Noto_Sans_TC:Bold',sans-serif] text-[22px] text-[#191919] leading-none whitespace-nowrap"
+                    >
+                      {{ ticket.points }}積分
+                    </div>
+                    <button
+                      class="px-4 py-1.5 bg-white md:hover:bg-[#f7f6f5] text-[#191919] rounded-full font-['Noto_Sans_TC:Bold',sans-serif] text-[11px] transition-colors shadow-md"
+                      type="button"
+                      @click.stop="goCuponTicket(ticket)"
+                    >
+                      兌換
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-center gap-2 mt-4" v-if="mobilePages.length > 1">
+        <button
+          v-for="(_, idx) in mobilePages"
+          :key="`dot-${idx}`"
+          type="button"
+          class="h-2 rounded-full transition-all"
+          :class="idx === mobilePageIndex ? 'w-8 bg-[#f27400]' : 'w-2 bg-[#e0e0e0]'"
+          @click="scrollToMobilePage(idx)"
+          aria-label="切換票券分頁"
+        ></button>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
 import { useStoresStore } from '@/stores/StoresStores'
 import { storeToRefs } from 'pinia'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 defineOptions({
@@ -52,167 +158,59 @@ const { tickets } = storeToRefs(storesStore)
 const router = useRouter()
 
 const goCuponTicket = (ticket) => {
-  router.push({ name: 'CuponTicket', params: { id: ticket.id } })
+  router.push({ name: 'HomeTicketCupon', params: { id: ticket.id } })
 }
+
+const mobileScrollerEl = ref(null)
+const mobilePageIndex = ref(0)
+
+const mobilePages = computed(() => {
+  const list = Array.isArray(tickets.value) ? tickets.value : []
+  const perPage = 2
+  const pages = []
+  for (let i = 0; i < list.length; i += perPage) pages.push(list.slice(i, i + perPage))
+  return pages
+})
+
+let rafId = 0
+const onMobileScroll = () => {
+  if (!mobileScrollerEl.value) return
+  cancelAnimationFrame(rafId)
+  rafId = requestAnimationFrame(() => {
+    const el = mobileScrollerEl.value
+    const pageWidth = el.clientWidth || 1
+    const idx = Math.round(el.scrollLeft / pageWidth)
+    mobilePageIndex.value = Math.max(0, Math.min(idx, mobilePages.value.length - 1))
+  })
+}
+
+const scrollToMobilePage = async (idx) => {
+  await nextTick()
+  const el = mobileScrollerEl.value
+  if (!el) return
+  const pageWidth = el.clientWidth || 0
+  el.scrollTo({ left: idx * pageWidth, behavior: 'smooth' })
+}
+
+onMounted(() => {
+  onMobileScroll()
+  window.addEventListener('resize', onMobileScroll, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onMobileScroll)
+  cancelAnimationFrame(rafId)
+})
 </script>
 
 <style scoped>
-/* 票券列表：用 CSS 重做（取代大量 Tailwind class） */
-.tickets-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
+/* 隱藏手機橫向捲軸（等同常見的 scrollbar-hide 插件） */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
 }
-
-@media (min-width: 640px) {
-  .tickets-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
-
-
-.ticket-card {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) 150px; /* ✅ 中間不爆版 */
-  background: #fff;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-}
-
-
-.ticket-card:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.ticket-logo {
-  aspect-ratio: 1 / 1;             /* ✅ 永遠正方形，高度跟著寬度走 */
-  padding: 8px;
-  box-sizing: border-box;
-  display: grid;
-}
-
-.ticket-logo-img {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 16px;
-  display: block;
-}
-
-
-@media (min-width: 768px) {
-  .ticket-logo {
-    width: 130px;
-    height: 130px;
-  }
-}
-
-.ticket-info {
-  min-width: 0;
-  padding: 12px 16px;
-}
-
-
-.ticket-store {
-  font-size: 14px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (min-width: 768px) {
-  .ticket-store {
-    font-size: 16px;
-  }
-}
-
-.ticket-name {
-  font-size: 12px;
-  color: #4b5563;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (min-width: 768px) {
-  .ticket-name {
-    font-size: 14px;
-  }
-}
-
-.ticket-stub {
-  width: 150px;
-  background: #facc15;
-  position: relative;
-  display: grid;
-  place-items: center;
-  padding: 16px 12px;
-  border-radius: 0 16px 16px 0;
-}
-
-
-@media (min-width: 768px) {
-  .ticket-stub {
-    width: 150px;
-  }
-}
-
-.stub-perforation {
-  position: absolute;
-  left: -1.2px;
-  top: 0;
-  height: 100%;
-  width: 1px;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 0,
-    #d19d02 6px,
-    #d19d02 10px
-  );
-}
-
-.stub-notch {
-  position: absolute;
-  left: -18px;
-  top: 50%;
-  transform: translateY(-60%);
-  width: 24px;
-  height: 24px;
-  border-radius: 9999px;
-  background: #ffffff;
-}
-
-.stub-points {
-  font-size: 28px;
-  font-weight: 400;
-  color: #111827;
-  margin-bottom: 12px;
-  text-align: center;
-  line-height: 1.2;
-}
-
-.stub-btn {
-  width: 100%;
-  border: 0;
-  border-radius: 9999px;
-  background: #ffffff;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #111827;
-  cursor: pointer;
-  transition: background 150ms ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-}
-
-/* .stub-btn:hover {
-  background: #f3f4f6;
-} */
 </style>
 

@@ -1,5 +1,5 @@
 <template>
-  <main class="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8">
+  <main class="w-full mx-auto px-4 md:px-6 py-6 md:py-8">
     <div class="mb-6 md:mb-8">
       <h1 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[20px] md:text-[28px] text-[#191919]">
         {{ pageTitle }}
@@ -103,7 +103,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { useStoresStore } from '@/stores/StoresStores'
 import PageSelecet from '@/components/PageSelecet.vue'
 
@@ -131,6 +131,11 @@ const pagedStores = computed(() => {
 onMounted(() => {
   storesStore.searchKeyword = String(route.query.keyword || '').trim()
   window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
+// 離開「搜尋結果頁」時清空搜尋字，避免帶到下一個頁面（例如店家詳情）
+onBeforeRouteLeave(() => {
+  storesStore.searchKeyword = ''
 })
 
 watch(

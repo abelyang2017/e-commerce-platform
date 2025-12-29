@@ -1,7 +1,68 @@
 <template>
   <div class="w-full bg-white">
+    <!-- 手機版：響應式 Header（md 以下） -->
+    <div class="md:hidden border-b border-gray-200">
+      <div class="px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <button
+            v-if="!isHome"
+            type="button"
+            class="text-[#191919] md:hover:text-[#FF8A00] transition-colors p-1"
+            aria-label="返回上一頁"
+            @click="goBack"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="w-5 h-5"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+          </button>
+          <img
+            src="@/assets/icons/logo.png"
+            alt="PayEasy"
+            class="h-8 w-auto cursor-pointer transition-opacity hover:opacity-80"
+            @click="goToHome"
+          />
+        </div>
+
+        <button
+          v-if="!userStore.isLoggedIn"
+          type="button"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#FF8A00] text-[#FF8A00] md:hover:bg-[#fff3e6] md:hover:border-[#FF8A00] transition-colors font-['Noto_Sans_TC:Medium',sans-serif] text-[13px]"
+          @click="showLoginDialog = true"
+          aria-label="登入"
+        >
+          <el-icon class="login-icon">
+            <User />
+          </el-icon>
+        </button>
+
+        <button
+          v-else
+          type="button"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#FF8A00] text-[#FF8A00] md:hover:bg-[#fff3e6] md:hover:border-[#FF8A00] transition-colors font-['Noto_Sans_TC:Medium',sans-serif] text-[13px]"
+          @click="handleLogout"
+          aria-label="登出"
+        >
+          <el-icon class="login-icon">
+            <User />
+          </el-icon>
+        </button>
+      </div>
+    </div>
+
     <!-- 頂部 Header Bar -->
-    <el-header class="flex h-auto w-full items-center justify-between border-b border-gray-200 px-6 py-4">
+    <el-header class="hidden md:flex apphead-bottom-shadow h-auto w-full items-center justify-between border-b border-gray-200 px-6 py-4">
       <div class="w-10/12 mx-auto flex items-center justify-between">
       <div class="flex items-center gap-4">
         <img
@@ -36,7 +97,7 @@
     </el-header>
     <!-- 導航欄 -->
 
-    <div ref="allCategoriesWrapperRef" class="relative">
+    <div ref="allCategoriesWrapperRef" class="relative hidden md:block">
       <el-menu
         :style="{
           '--el-menu-text-color': '#111827',
@@ -51,7 +112,7 @@
           <el-menu-item v-for="category in categories" :key="category" :index="category" class="categories-container">
             {{ category }}
           </el-menu-item>
-          <el-menu-item index="全部分類" class="all-categories-menu-item flex items-center gap-1 !text-[#ffa940]">
+          <el-menu-item index="全部分類" class="all-categories-menu-item flex items-center !text-[16px] gap-1 !text-[#ffa940]">
             <span>全部分類</span>
             <el-icon
               class="!text-[#ffa940] transition-transform duration-200"
@@ -63,128 +124,24 @@
         </div>
       </el-menu>
 
-      <!-- 全部分類下拉彈窗（位置：導覽列下方） -->
-      <div
-        v-show="showAllCategories"
-        class="absolute top-full left-0 right-0 bg-white border-t border-b border-[#e0e0e0] shadow-lg z-50 max-h-[70vh] overflow-y-auto"
-      >
-        <div class="max-w-[1400px] mx-auto px-4 md:px-6 py-6">
-          <div class="mb-6">
-            <h3 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] text-[#FF8A00] mb-3">特店分類</h3>
-            <div class="grid grid-cols-5 gap-2">
-              <button
-                v-for="item in allCategoriesMain"
-                :key="item"
-                type="button"
-                class="text-left py-2 px-3 font-['Noto_Sans_TC:Regular',sans-serif] text-[14px] transition-colors rounded-md"
-                :class="
-                  selectedMainCategory === item
-                    ? 'text-[#FF8A00] bg-[#fff3e6]'
-                    : 'text-[#4f4f4f] md:hover:text-[#FF8A00] md:hover:bg-[#f7f6f5]'
-                "
-                @click="selectedMainCategory = item"
-              >
-                {{ item }}
-              </button>
-            </div>
-          </div>
-
-          <div class="mb-6">
-            <h3 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] text-[#FF8A00] mb-3">細部分類</h3>
-            <div class="grid grid-cols-5 gap-2">
-              <button
-                v-for="item in allCategoriesSub"
-                :key="item"
-                type="button"
-                class="text-left py-2 px-3 font-['Noto_Sans_TC:Regular',sans-serif] text-[14px] transition-colors rounded-md"
-                :class="
-                  selectedSubCategory === item
-                    ? 'text-[#FF8A00] bg-[#fff3e6]'
-                    : 'text-[#4f4f4f] md:hover:text-[#FF8A00] md:hover:bg-[#f7f6f5]'
-                "
-                @click="selectedSubCategory = item"
-              >
-                {{ item }}
-              </button>
-            </div>
-          </div>
-
-          <div class="mb-6">
-            <h3 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] text-[#FF8A00] mb-3">縣市區域</h3>
-            <div class="flex gap-4">
-              <select
-                v-model="selectedCity"
-                class="flex-1 px-4 py-2.5 bg-white border border-[#e0e0e0] text-[#4f4f4f] rounded-lg font-['Noto_Sans_TC:Regular',sans-serif] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FF8A00]/20 focus:border-[#FF8A00] cursor-pointer"
-              >
-                <option v-for="city in cityOptions" :key="city" :value="city">{{ city }}</option>
-              </select>
-              <select
-                v-model="selectedDistrict"
-                class="flex-1 px-4 py-2.5 bg-white border border-[#e0e0e0] text-[#4f4f4f] rounded-lg font-['Noto_Sans_TC:Regular',sans-serif] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FF8A00]/20 focus:border-[#FF8A00] cursor-pointer"
-              >
-                <option v-for="d in districtOptions" :key="d" :value="d">{{ d }}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="mb-6">
-            <h3 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] text-[#FF8A00] mb-3">服務</h3>
-            <div class="grid grid-cols-5 gap-2">
-              <button
-                v-for="item in serviceOptions"
-                :key="item"
-                type="button"
-                class="text-left py-2 px-3 font-['Noto_Sans_TC:Regular',sans-serif] text-[14px] transition-colors rounded-md"
-                :class="
-                  selectedServices.includes(item)
-                    ? 'text-[#FF8A00] bg-[#fff3e6]'
-                    : 'text-[#4f4f4f] md:hover:text-[#FF8A00] md:hover:bg-[#f7f6f5]'
-                "
-                @click="toggleService(item)"
-              >
-                {{ item }}
-              </button>
-            </div>
-          </div>
-
-          <div class="mb-6">
-            <h3 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] text-[#FF8A00] mb-3">評分</h3>
-            <div class="grid grid-cols-5 gap-2">
-              <button
-                v-for="item in ratingOptions"
-                :key="item"
-                type="button"
-                class="text-left py-2 px-3 font-['Noto_Sans_TC:Regular',sans-serif] text-[14px] transition-colors rounded-md"
-                :class="
-                  selectedRating === item
-                    ? 'text-[#FF8A00] bg-[#fff3e6]'
-                    : 'text-[#4f4f4f] md:hover:text-[#FF8A00] md:hover:bg-[#f7f6f5]'
-                "
-                @click="selectedRating = item"
-              >
-                {{ item }}
-              </button>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e0e0]">
-            <button
-              type="button"
-              class="w-32 px-6 py-2.5 bg-white border border-[#e0e0e0] text-[#4f4f4f] rounded-md font-['Noto_Sans_TC:Medium',sans-serif] text-[14px] md:hover:bg-[#f5f5f5] transition-colors"
-              @click="clearAllFilters"
-            >
-              清除篩選
-            </button>
-            <button
-              type="button"
-              class="w-32 px-6 py-2.5 bg-[#FF8A00] text-white rounded-md font-['Noto_Sans_TC:Bold',sans-serif] text-[14px] md:hover:bg-[#e66a00] transition-colors shadow-md"
-              @click="applyAllFilters"
-            >
-              確定
-            </button>
-          </div>
-        </div>
-      </div>
+      <CatgWindow
+        v-model:show="showAllCategories"
+        :all-categories-main="allCategoriesMain"
+        :all-categories-sub="allCategoriesSub"
+        :city-options="cityOptions"
+        :district-options="districtOptions"
+        :service-options="serviceOptions"
+        :rating-options="ratingOptions"
+        v-model:selected-main-category="selectedMainCategory"
+        v-model:selected-sub-category="selectedSubCategory"
+        v-model:selected-city="selectedCity"
+        v-model:selected-district="selectedDistrict"
+        v-model:selected-rating="selectedRating"
+        :selected-services="selectedServices"
+        :toggle-service="toggleService"
+        :clear-all-filters="clearAllFilters"
+        :apply-all-filters="applyAllFilters"
+      />
     </div>
     <!-- 登入彈窗 -->
     <LoginDialog v-model="showLoginDialog" />
@@ -198,6 +155,7 @@ import { User, ArrowDown } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/UserStores'
 import { useProductsStore } from '@/stores/ProductsStores'
 import LoginDialog from '@/components/LoginDialog.vue'
+import CatgWindow from '@/components/CatgWindow.vue'
 
 defineOptions({
   name: 'AppHeader',
@@ -207,6 +165,17 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const productsStore = useProductsStore()
+
+const isHome = computed(() => route.name === 'Home' || route.path === '/')
+
+const goBack = () => {
+  // 手機版返回：優先回上一頁；若無可回退歷史則回首頁，避免導到站外
+  if (typeof window !== 'undefined' && window.history.length > 1) {
+    router.back()
+    return
+  }
+  router.push({ name: 'Home' })
+}
 
 const showLoginDialog = ref(false)
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920)
@@ -407,6 +376,14 @@ const goToHome = async () => {
 <style scoped>
 /* 強制設置 SVG 和所有子元素的顏色 */
 
+.apphead-bottom-shadow{
+  /* 保險：確保能打到 Element Plus 的 el-header 根節點 */
+  position: relative;
+  z-index: 50;
+  /* 只做底部陰影（調明顯一點，避免肉眼看不出來） */
+  box-shadow: 0 8px 18px -10px rgba(17, 24, 39, 0.35) ;
+}
+
 .login-icon :deep(svg *) {
   fill: #ffa940 !important;
   color: #ffa940 !important;
@@ -418,6 +395,13 @@ const goToHome = async () => {
   fill: #ffa940 !important;
   color: #ffa940 !important;
   stroke: #ffa940 !important;
+}
+
+/* 手機版：使用者 icon 強制橘色（避免 SVG 不吃 text color） */
+.mobile-user-icon :deep(svg *) {
+  fill: #FF8A00 !important;
+  color: #FF8A00 !important;
+  stroke: #FF8A00 !important;
 }
 
 .categories-container:hover {

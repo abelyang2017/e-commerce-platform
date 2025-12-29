@@ -2,7 +2,7 @@
   <button
     v-if="showBackToTop"
     type="button"
-    class="back-to-top-btn fixed bottom-15 right-15 z-50 flex h-18 w-18 items-center justify-center rounded-full bg-[#ffa940] text-white shadow-lg transition-colors transition-shadow hover:bg-[#ff8c00] hover:shadow-xl active:scale-95"
+    class="back-to-top-btn fixed bottom-4 right-4 sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-8 z-50 flex h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 items-center justify-center rounded-full bg-[#ffa940] text-white shadow-lg transition-colors transition-shadow hover:bg-[#ff8c00] hover:shadow-xl active:scale-95"
     @click="scrollTop"
     aria-label="回到頂部"
   >
@@ -14,7 +14,7 @@
       stroke-width="2.5"
       stroke-linecap="round"
       stroke-linejoin="round"
-      class="back-to-top-arrow h-6 w-6 text-white"
+      class="back-to-top-arrow h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 text-white"
     >
       <path d="M18 15l-6-6-6 6" class="text-white" />
     </svg>

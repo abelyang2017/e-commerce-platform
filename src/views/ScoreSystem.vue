@@ -6,7 +6,8 @@
           <img :src="ticket.image" :alt="ticketTitle" class="w-full h-full object-cover" />
         </div>
 
-        <div class="p-6 md:p-8">
+        <!-- 手機底部有固定操作列：內容區需要預留底部空間避免被蓋住 -->
+        <div class="p-6 md:p-8 pb-24 md:pb-8">
           <div class="mb-8">
             <h1 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[24px] md:text-[32px] text-[#191919] mb-4">
               {{ ticketTitle }}
@@ -52,14 +53,29 @@
             </div>
           </div>
 
-          <button
-            type="button"
-            class="w-full bg-[#FF8A00] md:hover:bg-[#e66a00] text-white font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] md:text-[18px] py-4 rounded-[12px] transition-colors shadow-md"
-          >
-            立即兌換
-          </button>
+          <!-- 桌機/平板：維持原本按鈕在內容流內 -->
+          <div class="hidden md:block">
+            <button
+              type="button"
+              class="w-full bg-[#FF8A00] md:hover:bg-[#e66a00] text-white font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] md:text-[18px] py-4 rounded-[12px] transition-colors shadow-md"
+            >
+              立即兌換
+            </button>
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- 手機版：固定在底部的操作列（不隨內容滾動消失） -->
+    <div
+      class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#e0e0e0] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0px_-2px_8px_rgba(0,0,0,0.08)] z-40"
+    >
+      <button
+        type="button"
+        class="w-full bg-[#FF8A00] !text-white font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] py-4 rounded-[12px] transition-colors shadow-md"
+      >
+        立即兌換
+      </button>
     </div>
   </main>
 
@@ -125,3 +141,5 @@ onMounted(() => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 </script>
+
+

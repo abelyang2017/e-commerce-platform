@@ -1,6 +1,6 @@
 <template>
   <!-- 主題推薦 -->
-  <div class="w-10/12 mx-auto px-4 py-8">
+  <div class="w-full mx-auto px-4 md:px-6 py-4 md:py-8">
     <div class="mb-6 flex items-center justify-between">
       <h2 class="text-2xl font-bold text-gray-900">主題推薦</h2>
       <div class="flex gap-2">
@@ -8,122 +8,117 @@
       </div>
     </div>
 
-    <Swiper
-      class="home-themes-swiper"
-      :modules="modules"
-      :slides-per-view="1"
-      :slides-per-group="1"
-      :space-between="16"
-      :navigation="false"
-      :pagination="{ clickable: true }"
-      :breakpoints="{
-        768: { slidesPerView: 2, slidesPerGroup: 1, spaceBetween: 24 },
-      }"
-      @slideChange="onSlideChange"
-      @swiper="onSwiper"
-    >
-      <SwiperSlide v-for="theme in themes" :key="theme.id">
-        <div class="theme-slide">
-          <!-- 主題大卡 -->
-          <div class="theme-hero" @click="handleThemeClick(theme)">
-            <img
-              :src="getThemeHeroSrc(theme)"
-              :alt="theme.theme"
-              class="theme-hero-img"
-            />
-            <div class="theme-hero-overlay"></div>
-            <div class="theme-hero-text">
-              <div class="theme-hero-title">{{ theme.theme }}</div>
-              <div class="theme-hero-sub">{{ theme.storeCount || 0 }}個店家</div>
-            </div>
-          </div>
-
-          <!-- 主題底下店家小卡（取前三個） -->
-          <div class="theme-store-grid">
-            <div
-              v-for="store in (theme.stores || []).slice(0, 3)"
-              :key="store.id"
-              class="theme-store-card"
-              @click="handleStoreClick(store)"
-            >
-              <div class="theme-store-thumb">
-                <img :src="store.image" :alt="store.name" class="theme-store-img" />
+    <!-- 不依賴 Swiper：用 scroll-snap 做手機手指左右滑動（桌機每頁 2 張） -->
+    <div class="relative">
+      <div
+        ref="scrollerEl"
+        class="home-themes-scroller flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth"
+        @scroll.passive="onScroll"
+      >
+        <div v-for="(page, pageIdx) in themePages" :key="`page-${pageIdx}`" class="min-w-full snap-start">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div v-for="theme in page" :key="theme.id" class="theme-slide">
+              <!-- 主題大卡 -->
+              <div class="theme-hero" @click="handleThemeClick(theme)">
+                <img :src="getThemeHeroSrc(theme)" :alt="theme.theme" class="theme-hero-img" />
+                <div class="theme-hero-overlay"></div>
+                <div class="theme-hero-text">
+                  <div class="theme-hero-title">{{ theme.theme }}</div>
+                  <div class="theme-hero-sub">{{ theme.storeCount || 0 }}個店家</div>
+                </div>
               </div>
-              <div class="theme-store-name">{{ store.name }}</div>
-              <div class="theme-store-meta">{{ store.category }}</div>
-              <div class="theme-store-stats">
-                <span class="theme-store-stat">
-                  <span class="theme-store-star">★</span>
-                  {{ store.rating }}
-                </span>
-                <span class="theme-store-stat">
-                  <span class="theme-store-pin inline-flex items-center leading-none" aria-hidden="true">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="h-[1em] w-[1em]"
-                    >
-                      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"></path>
-                      <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                  </span>
-                  {{ store.distance }}km
-                </span>
+
+              <!-- 主題底下店家小卡（取前三個） -->
+              <div class="theme-store-grid">
+                <div
+                  v-for="store in (theme.stores || []).slice(0, 3)"
+                  :key="store.id"
+                  class="theme-store-card"
+                  @click="handleStoreClick(store)"
+                >
+                  <div class="theme-store-thumb">
+                    <img :src="store.image" :alt="store.name" class="theme-store-img" />
+                  </div>
+                  <div class="theme-store-name">{{ store.name }}</div>
+                  <div class="theme-store-meta">{{ store.category }}</div>
+                  <div class="theme-store-stats">
+                    <span class="theme-store-stat">
+                      <span class="theme-store-star">★</span>
+                      {{ store.rating }}
+                    </span>
+                    <span class="theme-store-stat">
+                      <span class="theme-store-pin inline-flex items-center leading-none" aria-hidden="true">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="h-[1em] w-[1em]"
+                        >
+                          <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"></path>
+                          <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                      </span>
+                      {{ store.distance }}km
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </SwiperSlide>
+      </div>
 
-      <!-- 放在 container-end，確保不被裁 -->
-      <template #container-end>
-        <!-- Prev -->
-        <button
-          ref="prevEl"
-          class="nav-btn nav-prev"
-          :class="{ disabled: isBeginning }"
-          :disabled="isBeginning"
-          aria-label="Prev"
-          @click="goPrev"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+      <!-- Prev -->
+      <button
+        class="nav-btn nav-prev hidden md:grid"
+        :class="{ disabled: isBeginning }"
+        :disabled="isBeginning"
+        aria-label="Prev"
+        @click="goPrev"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
 
-        <!-- Next -->
-        <button
-          ref="nextEl"
-          class="nav-btn nav-next"
-          :class="{ disabled: isEnd }"
-          :disabled="isEnd"
-          aria-label="Next"
-          @click="goNext"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </template>
-    </Swiper>
+      <!-- Next -->
+      <button
+        class="nav-btn nav-next hidden md:grid"
+        :class="{ disabled: isEnd }"
+        :disabled="isEnd"
+        aria-label="Next"
+        @click="goNext"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- 分頁點點（點一下可切頁） -->
+    <div class="flex justify-center gap-2 mt-4" v-if="themePages.length > 1">
+      <button
+        v-for="(_, idx) in themePages"
+        :key="`dot-${idx}`"
+        type="button"
+        class="h-2 rounded-full transition-all"
+        :class="idx === pageIndex - 1 ? 'w-8 bg-[#f27400]' : 'w-2 bg-[#e0e0e0]'"
+        @click="scrollToPage(idx)"
+        aria-label="切換主題分頁"
+      ></button>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
 import { useStoresStore } from '@/stores/StoresStores'
-import { ref, nextTick } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Navigation, Pagination } from 'swiper/modules'
-import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
 
 defineOptions({
   name: 'HomeThemes',
@@ -132,23 +127,21 @@ defineOptions({
 const router = useRouter()
 const storesStore = useStoresStore()
 const { themes } = storeToRefs(storesStore)
-const pageIndex = ref(1)
-const totalPages = ref(1)
-const modules = [Navigation, Pagination]
-const swiperRef = ref(null)
-const prevEl = ref(null)
-const nextEl = ref(null)
-
-// 判斷是否在第一頁或最後一頁
+const scrollerEl = ref(null)
+const pageIndex = ref(1) // 1-based（顯示用）
 const isBeginning = ref(true)
 const isEnd = ref(false)
+const isDesktop = ref(false)
 
-function updateNavState(swiper) {
-  if (!swiper) return
+const themePages = computed(() => {
+  const list = Array.isArray(themes.value) ? themes.value : []
+  const perPage = isDesktop.value ? 2 : 1
+  const pages = []
+  for (let i = 0; i < list.length; i += perPage) pages.push(list.slice(i, i + perPage))
+  return pages
+})
 
-  isBeginning.value = !!swiper.isBeginning
-  isEnd.value = !!swiper.isEnd
-}
+const totalPages = computed(() => Math.max(1, themePages.value.length))
 
 function getThemeHeroSrc(theme) {
   const heroSrc = theme?.image || theme?.stores?.[0]?.image || ''
@@ -164,78 +157,91 @@ const handleThemeClick = (theme) => {
   console.log('theme click:', theme?.theme)
 }
 
-const onSlideChange = (swiper) => {
-  // 用 snapIndex / snapGrid 以「頁」為單位計算（桌機 2 張一頁時會是 1/3）
-  const snapIndex = (swiper && typeof swiper.snapIndex === 'number' && swiper.snapIndex) || 0
-  pageIndex.value = snapIndex + 1
-  totalPages.value = swiper?.snapGrid?.length || 1
-  updateNavState(swiper)
+let rafId = 0
+const updateViewport = () => {
+  isDesktop.value = typeof window !== 'undefined' && window.innerWidth >= 768
 }
 
-const onSwiper = (swiper) => {
-  swiperRef.value = swiper
-  pageIndex.value = (swiper?.snapIndex ?? 0) + 1
-  totalPages.value = swiper?.snapGrid?.length || 1
-  updateNavState(swiper)
+const updateNavStateByIndex = (idx) => {
+  const lastIdx = Math.max(0, themePages.value.length - 1)
+  isBeginning.value = idx <= 0
+  isEnd.value = idx >= lastIdx
+}
 
-  // 等自訂按鈕 refs 掛上後再初始化 navigation
-  nextTick(() => {
-    if (!swiperRef.value || !prevEl.value || !nextEl.value) return
-
-    // 確保傳遞的是 DOM 元素，而不是 ref 對象
-    const prevElement = prevEl.value instanceof HTMLElement ? prevEl.value : null
-    const nextElement = nextEl.value instanceof HTMLElement ? nextEl.value : null
-
-    if (!prevElement || !nextElement) return
-
-    swiperRef.value.params.navigation.prevEl = prevElement
-    swiperRef.value.params.navigation.nextEl = nextElement
-    swiperRef.value.navigation.init()
-    swiperRef.value.navigation.update()
-    updateNavState(swiperRef.value)
+const onScroll = () => {
+  if (!scrollerEl.value) return
+  cancelAnimationFrame(rafId)
+  rafId = requestAnimationFrame(() => {
+    const el = scrollerEl.value
+    const pageWidth = el.clientWidth || 1
+    const idx = Math.round(el.scrollLeft / pageWidth)
+    const maxIdx = Math.max(0, themePages.value.length - 1)
+    const safeIdx = Math.max(0, Math.min(idx, maxIdx))
+    pageIndex.value = safeIdx + 1
+    updateNavStateByIndex(safeIdx)
   })
 }
 
+const scrollToPage = async (idx) => {
+  await nextTick()
+  const el = scrollerEl.value
+  if (!el) return
+  const pageWidth = el.clientWidth || 0
+  const maxIdx = Math.max(0, themePages.value.length - 1)
+  const safeIdx = Math.max(0, Math.min(idx, maxIdx))
+  el.scrollTo({ left: safeIdx * pageWidth, behavior: 'smooth' })
+}
+
 const goPrev = () => {
-  if (swiperRef.value && !isBeginning.value) {
-    swiperRef.value.slidePrev()
-  }
+  if (isBeginning.value) return
+  scrollToPage((pageIndex.value || 1) - 2)
 }
 
 const goNext = () => {
-  if (swiperRef.value && !isEnd.value) {
-    swiperRef.value.slideNext()
-  }
+  if (isEnd.value) return
+  scrollToPage((pageIndex.value || 1))
 }
+
+const syncAfterLayoutChange = async () => {
+  await nextTick()
+  const idx = Math.max(0, Math.min((pageIndex.value || 1) - 1, themePages.value.length - 1))
+  pageIndex.value = idx + 1
+  updateNavStateByIndex(idx)
+  // 重新對齊到整頁（避免 resize 後卡在半頁）
+  await scrollToPage(idx)
+}
+
+onMounted(() => {
+  updateViewport()
+  onScroll()
+  window.addEventListener('resize', updateViewport, { passive: true })
+  window.addEventListener('resize', onScroll, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewport)
+  window.removeEventListener('resize', onScroll)
+  cancelAnimationFrame(rafId)
+})
+
+watch(
+  () => themePages.value.length,
+  () => {
+    syncAfterLayoutChange()
+  },
+  { immediate: true }
+)
+
+watch(isDesktop, () => {
+  syncAfterLayoutChange()
+})
 </script>
 
 <style scoped>
-/* Swiper 外觀調整（指示器/箭頭） */
-.home-themes-swiper {
+/* scroll-snap 容器（取代 Swiper） */
+.home-themes-scroller {
   position: relative;
   padding: 0 1%;
-}
-
-.home-themes-swiper :deep(.swiper-pagination) {
-  position: static;
-  margin-top: 12px;
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-}
-
-.home-themes-swiper :deep(.swiper-pagination-bullet) {
-  width: 6px;
-  height: 6px;
-  background: #d1d5db;
-  opacity: 1;
-  border-radius: 9999px;
-  transition: all 150ms ease;
-}
-
-.home-themes-swiper :deep(.swiper-pagination-bullet-active) {
-  width: 20px;
-  background: #ff8a00;
 }
 
 /* 自訂左右按鈕（Feather 風格箭頭） */
@@ -243,8 +249,8 @@ const goNext = () => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: clamp(32px, 4vw, 44px);
+  height: clamp(32px, 4vw, 44px);
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
@@ -260,8 +266,8 @@ const goNext = () => {
 }
 
 .nav-btn svg {
-  width: 18px;
-  height: 18px;
+  width: clamp(16px, 2.2vw, 20px);
+  height: clamp(16px, 2.2vw, 20px);
 }
 
 .nav-prev {
@@ -275,21 +281,6 @@ const goNext = () => {
 .nav-btn.disabled {
   opacity: 0.5;
   pointer-events: none;
-}
-
-.home-themes-swiper :deep(.swiper-button-prev) {
-  left: 6px;
-}
-
-.home-themes-swiper :deep(.swiper-button-next) {
-  right: 6px;
-}
-
-.home-themes-swiper :deep(.swiper-button-prev:after),
-.home-themes-swiper :deep(.swiper-button-next:after) {
-  font-size: 14px;
-  color: #111827;
-  font-weight: 700;
 }
 
 .theme-slide {
@@ -310,13 +301,20 @@ const goNext = () => {
   position: relative;
   overflow: hidden;
   border-radius: 16px 16px 0 0;
-  height: 40vh;
+  width: 100%;
+  /* 用寬高比控制高度，避免固定 vh 導致不同裝置過高/過矮 */
+  aspect-ratio: 16 / 9;
+  height: auto;
+  min-height: 180px;
+  max-height: 420px;
   cursor: pointer;
 }
 
 @media (min-width: 768px) {
   .theme-hero {
-    min-height: 20vh;
+    aspect-ratio: 16 / 8;
+    min-height: 220px;
+    max-height: 460px;
   }
 }
 
@@ -399,8 +397,9 @@ const goNext = () => {
 }
 
 .theme-store-name {
-  padding: 10px 10px 4px;
-  font-size: 20px;
+  padding: clamp(8px, 1.2vw, 10px) clamp(8px, 1.2vw, 10px) clamp(3px, 0.6vw, 4px);
+  font-size: clamp(14px, 1.4vw, 20px);
+  line-height: 1.2;
   font-weight: 800;
   color: #111827;
   white-space: nowrap;
@@ -409,8 +408,9 @@ const goNext = () => {
 }
 
 .theme-store-meta {
-  padding: 0 10px 6px;
-  font-size: 18px;
+  padding: 0 clamp(8px, 1.2vw, 10px) clamp(5px, 0.8vw, 6px);
+  font-size: clamp(12px, 1.2vw, 18px);
+  line-height: 1.2;
   color: #6b7280;
   white-space: nowrap;
   overflow: hidden;
@@ -418,12 +418,13 @@ const goNext = () => {
 }
 
 .theme-store-stats {
-  padding: 0 10px 10px;
+  padding: 0 clamp(8px, 1.2vw, 10px) clamp(8px, 1.2vw, 10px);
   display: flex;
   justify-content: space-between;
   padding-bottom: 25px;
   gap: 10px;
-  font-size: 18px;
+  font-size: clamp(12px, 1.2vw, 18px);
+  line-height: 1.2;
   color: #4b5563;
 }
 
@@ -435,6 +436,15 @@ const goNext = () => {
 
 .theme-store-star {
   color: #f57c0b;
+}
+
+/* 隱藏橫向捲軸（與 HomeTickets 同步） */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 </style>
 

@@ -1,37 +1,65 @@
 <template>
   <!-- 精選品牌 -->
-  <div class="w-10/12 mx-auto px-4 py-8">
-    <div class="mb-6 flex items-center justify-between">
-      <h2 class="text-2xl font-medium text-gray-900">精選品牌</h2>
-      <el-button class="see-all-btn" type="primary" text @click="goAllBrands">
+  <section class="w-full  mx-auto px-4 md:px-6 py-4 md:py-8">
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <h2
+        class="font-['Noto_Sans_TC:Bold',sans-serif] text-[20px] md:text-[28px] text-[#191919]"
+      >
+        精選品牌
+      </h2>
+      <button
+        type="button"
+        class="text-[#FF8A00] md:hover:text-[#e66a00] font-['Noto_Sans_TC:Medium',sans-serif] text-[11px] md:text-[12px] transition-colors flex items-center gap-1"
+        @click="goAllBrands"
+      >
         看全部
-        <el-icon class="see-all-icon"><ArrowRight /></el-icon>
-      </el-button>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="w-3 h-3 md:w-3.5 md:h-3.5"
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6"></path>
+        </svg>
+      </button>
     </div>
-    <div class="grid grid-cols-5 gap-4 md:grid-cols-10">
+    <div class="grid grid-cols-5 md:grid-cols-10 gap-3 md:gap-4">
       <div
         v-for="brand in displayBrands"
         :key="brand.id"
-        class="group flex cursor-pointer flex-col items-center transition-all"
+        class="flex flex-col items-center cursor-pointer group"
         role="button"
         tabindex="0"
         @click="goBrand(brand)"
         @keydown.enter.prevent="goBrand(brand)"
+        @keydown.space.prevent="goBrand(brand)"
       >
-        <el-avatar :size="100" :src="brand.logo" @error="errorHandler">
+        <div
+          class="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden mb-1.5 md:mb-2 shadow-[0px_2px_4px_rgba(0,0,0,0.06)] md:group-hover:shadow-[0px_3px_6px_rgba(0,0,0,0.08)] transition-shadow"
+        >
           <img
-            src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"
-            :alt="brand.name"
+            :src="brand?.logo || fallbackLogo"
+            :alt="brand?.name || ''"
+            class="w-full h-full object-cover"
+            loading="lazy"
+            @error="onLogoError"
           />
-        </el-avatar>
-        <span
-          class="mt-2 text-xs text-gray-700 transition-colors group-hover:text-[#ff6b35]"
+        </div>
+        <p
+          class="text-center text-[11px] md:text-[12px] text-[#191919] md:group-hover:text-[#FF8A00] transition-colors"
         >
           {{ brand.name }}
-        </span>
+        </p>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>
@@ -39,7 +67,6 @@ import { computed } from 'vue'
 import { useStoresStore } from '@/stores/StoresStores'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
-import { ArrowRight } from '@element-plus/icons-vue'
 defineOptions({
   name: 'HomeBrands',
 })
@@ -48,10 +75,17 @@ const router = useRouter()
 const storesStore = useStoresStore()
 const { brands } = storeToRefs(storesStore)
 
+// logo 失敗時的預設圖（避免破圖影響排版）
+const fallbackLogo = 'https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png'
+
 // 首頁只顯示第一列（10 個）
 const displayBrands = computed(() => (Array.isArray(brands.value) ? brands.value.slice(0, 10) : []))
 
-const errorHandler = () => true
+function onLogoError(e) {
+  const img = e?.target
+  if (!img) return
+  if (img.src !== fallbackLogo) img.src = fallbackLogo
+}
 
 function goAllBrands() {
   router.push({ name: 'AllBrands' })
@@ -69,21 +103,3 @@ function goBrand(brand) {
   })
 }
 </script>
-
-<style scoped>
-.see-all-btn {
-  color: #ff6b35 !important;
-  font-weight: 300;
-  padding: 0 !important;
-}
-
-.see-all-btn:hover {
-  color: #ff8c00 !important;
-}
-
-.see-all-icon {
-  margin-left: 4px;
-  font-size: 14px;
-}
-</style>
-

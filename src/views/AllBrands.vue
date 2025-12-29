@@ -1,5 +1,5 @@
 <template>
-  <main class="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8">
+  <main class="w-full mx-auto px-4 md:px-6 py-6 md:py-8">
     <div class="mb-6 md:mb-8">
       <h1 class="font-['Noto_Sans_TC:Bold',sans-serif] text-[20px] md:text-[28px] text-[#191919]">
         全部品牌

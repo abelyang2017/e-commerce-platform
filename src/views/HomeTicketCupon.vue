@@ -56,7 +56,7 @@
       >
         <button
           type="button"
-          class="w-full bg-[#FF8A00] text-white font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] py-4 rounded-[12px] transition-colors shadow-md"
+          class="w-full bg-[#FF8A00] !text-white font-['Noto_Sans_TC:Bold',sans-serif] text-[16px] py-4 rounded-[12px] transition-colors shadow-md"
           @click="handleRedeem"
         >
           立即兌換
@@ -142,7 +142,7 @@ import { ElMessage } from 'element-plus'
 import { useStoresStore } from '@/stores/StoresStores'
 
 defineOptions({
-  name: 'CuponTicket',
+  name: 'HomeTicketCupon',
 })
 
 const route = useRoute()
@@ -179,3 +179,5 @@ onMounted(() => {
   window.scrollTo({ top: 0, left: 0 })
 })
 </script>
+
+
