@@ -2,7 +2,7 @@
   <div class="w-full bg-white">
     <!-- 手機版：響應式 Header（md 以下） -->
     <div class="md:hidden border-b border-gray-200">
-      <div class="px-4 py-3 flex items-center justify-between">
+      <div class="apphead-mobile-bar flex items-center justify-between">
         <div class="flex items-center gap-2">
           <button
             v-if="!isHome"
@@ -27,12 +27,18 @@
               <path d="m15 18-6-6 6-6"></path>
             </svg>
           </button>
-          <img
-            src="@/assets/icons/logo.png"
-            alt="PayEasy"
-            class="h-8 w-auto cursor-pointer transition-opacity hover:opacity-80"
+          <button
+            type="button"
+            aria-label="回到首頁"
+            class="flex items-center gap-2 bg-transparent border-0 p-0 cursor-pointer transition-opacity hover:opacity-80"
             @click="goToHome"
-          />
+          >
+            <span role="img" aria-hidden="true" class="apphead-yelp-logo h-8 w-8 shrink-0"></span>
+            <span class="inline-flex flex-col text-base font-semibold text-[#FF8A00] leading-tight select-none">
+              <span>LOGO</span>
+              <span>Here</span>
+            </span>
+          </button>
         </div>
 
         <button
@@ -62,15 +68,21 @@
     </div>
 
     <!-- 頂部 Header Bar -->
-    <el-header class="hidden md:flex apphead-bottom-shadow h-auto w-full items-center justify-between border-b border-gray-200 px-6 py-4">
+    <el-header class="hidden md:flex apphead-bottom-shadow apphead-desktop-bar w-full items-center justify-between border-b border-gray-200 px-6">
       <div class="w-10/12 mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <img
-          src="@/assets/icons/logo.png"
-          alt="Logo"
-          class="h-[50px] w-auto cursor-pointer transition-opacity hover:opacity-80"
+      <div class="flex items-center">
+        <button
+          type="button"
+          aria-label="回到首頁"
+          class="flex items-center gap-4 bg-transparent border-0 p-0 cursor-pointer transition-opacity hover:opacity-80"
           @click="goToHome"
-        />
+        >
+          <span role="img" aria-hidden="true" class="apphead-yelp-logo h-[50px] w-[50px] shrink-0"></span>
+          <span class="inline-flex flex-col font-semibold text-[#FF8A00] leading-tight select-none">
+            <span class="text-[#FF8A00] text-md mt-5">LOGO</span>
+            <span class="text-[#FF8A00] text-sm mb-3">Here</span>
+          </span>
+        </button>
       </div>
       <div>
         <el-button
@@ -376,12 +388,41 @@ const goToHome = async () => {
 <style scoped>
 /* 強制設置 SVG 和所有子元素的顏色 */
 
+.apphead-mobile-bar {
+  /* 原本是 px-4 py-3（= 16px / 12px），依需求上下 +5px => 17px */
+  padding: 17px 16px;
+}
+
+.apphead-desktop-bar {
+  /* Element Plus el-header 可能有預設 height: 60px，會吃掉你想要的上下空間 */
+  height: auto !important;
+  /* 原本設計是 py-4（16px），依需求上下 +5px => 21px */
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+
+.apphead-yelp-logo {
+  /*
+    讓圖示「精準」跟文字同色：用 mask 方式把 PNG 當遮罩，再用背景色填滿
+    注意：這會以單色方式呈現圖示（符合你要的橘色一致性）
+  */
+  background-color: #FF8A00;
+  -webkit-mask-image: url('@/assets/icons/yelp.png');
+  mask-image: url('@/assets/icons/yelp.png');
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
 .apphead-bottom-shadow{
   /* 保險：確保能打到 Element Plus 的 el-header 根節點 */
   position: relative;
   z-index: 50;
   /* 只做底部陰影（調明顯一點，避免肉眼看不出來） */
-  box-shadow: 0 8px 18px -10px rgba(17, 24, 39, 0.35) ;
+  box-shadow: 0 8px 12px -10px rgba(17, 24, 39, 0.35) ;
 }
 
 .login-icon :deep(svg *) {
