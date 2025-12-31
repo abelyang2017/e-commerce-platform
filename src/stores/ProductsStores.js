@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { maybeShuffleArray } from '@/utils/shuffle'
 
 // 假資料：商品列表
 const mockProducts = [
@@ -157,8 +158,9 @@ const allCategories = [
 ]
 
 export const useProductsStore = defineStore('products', () => {
-  const products = ref(mockProducts)
-  const categories = ref(allCategories)
+  // 只在 store 初始化時洗牌一次，避免每次 computed 重新計算都導致順序改變
+  const products = ref(maybeShuffleArray(mockProducts))
+  const categories = ref(maybeShuffleArray(allCategories))
   const selectedCategory = ref('')
   const searchKeyword = ref('')
 

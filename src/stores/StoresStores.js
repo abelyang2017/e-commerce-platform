@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { maybeShuffleArray } from '@/utils/shuffle'
 
 // 假資料：精選品牌
 const featuredBrands = [
@@ -3891,9 +3892,16 @@ function buildStoreETickets(storeId, fallbackImage) {
 }
 
 export const useStoresStore = defineStore('stores', () => {
-  const brands = ref(featuredBrands)
-  const tickets = ref(popularTickets)
-  const themes = ref(themeStores)
+  // 只在 store 初始化時洗牌一次，避免每次渲染都亂跳
+  const brands = ref(maybeShuffleArray(featuredBrands))
+  const tickets = ref(maybeShuffleArray(popularTickets))
+  // 主題本身與主題底下店家都打亂一次（HomeThemes 會取前三個顯示）
+  const themes = ref(
+    maybeShuffleArray(themeStores).map((t) => ({
+      ...t,
+      stores: maybeShuffleArray(t?.stores || []),
+    }))
+  )
   // 搜尋關鍵字（StoreSearch / 熱門票券搜尋共用）
   const searchKeyword = ref('')
 
@@ -3907,7 +3915,7 @@ export const useStoresStore = defineStore('stores', () => {
   }
   // 生成足夠多的店家資料：讓「搜尋結果」能命中多筆（例如 星巴克 會出現多家分店）
   const stores = ref(
-    buildPartnerStores(160).map((s) => ({
+    maybeShuffleArray(buildPartnerStores(160)).map((s) => ({
       ...s,
       // 保證 StoreDetail 需要的欄位一定存在
       hours: s?.hours || '週一至週日 11:00-22:00',
